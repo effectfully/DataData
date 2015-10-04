@@ -23,11 +23,6 @@ elim-NatT : ∀ {π} -> (P : Tree NatT -> Set π) -> (∀ {n} -> P n -> P (sucT 
 elim-NatT P f z ⟨ true  , []     ⟩ = z
 elim-NatT P f z ⟨ false , n ∷ [] ⟩ = f (elim-NatT P f z n)
 
--- Why is it in (Set π)?
-data All {α π} {A : Set α} (P : A -> Set π) : ∀ {n} -> Vec A n -> Set π where
-  []ₐ  : All P []
-  _∷ₐ_ : ∀ {n x} {xs : Vec A n} -> P x -> All P xs -> All P (x ∷ xs)
-
 elim-Tree : ∀ {α π} {F : Normal α} {P : Tree F -> Set π}
           -> (∀ sh -> (ts : Vec (Tree F) (size F sh)) -> All P ts -> P ⟨ sh , ts ⟩) -> ∀ t -> P t
 elim-Tree {P = P} f ⟨ sh , ts ⟩ = f sh ts (map-elim-Tree ts) where

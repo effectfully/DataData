@@ -3,7 +3,7 @@ module DataData.Prelude where
 open import Level renaming (zero to lzero; suc to lsuc)                                        public
 open import Function hiding (_⟨_⟩_)                                                            public
 open import Relation.Nullary                                                                   public
-open import Relation.Binary                                                                    public
+open import Relation.Binary hiding (_⇒_)                                                       public
 open import Relation.Binary.PropositionalEquality hiding ([_])                                 public
 open import Relation.Binary.HeterogeneousEquality using (_≅_; ≅-to-≡) renaming (refl to hrefl) public         
 open import Data.Unit.Base using (⊤)                                                           public
@@ -12,7 +12,7 @@ open import Data.Nat.Base hiding (_⊔_)                                        
 open import Data.Fin using (Fin)                                                               public
 open import Data.Sum     renaming (map to smap)                                                public
 open import Data.Product renaming (map to pmap)                                                public
-open import Data.Vec     renaming (map to vmap) hiding ([_]; zip; _>>=_)                       public
+open import Data.Vec     renaming (map to vmap) hiding ([_]; zip; _>>=_; _∈_; module _∈_)      public
 open import Data.Vec.Properties                                                                public
 open ≡-Reasoning                                                                               public
 
@@ -27,6 +27,17 @@ x →⟨ x≡y ⟩ y-irt-z = x ≡⟨     x≡y ⟩ y-irt-z
 
 _←⟨_⟩_ : ∀ {α} {A : Set α} {y z} -> (x : A) -> y ≡ x -> y IsRelatedTo z -> x IsRelatedTo z
 x ←⟨ y≡x ⟩ y-irt-z = x →⟨ sym y≡x ⟩ y-irt-z
+
+--data Σ' {α β} {A : Set α} (B : A -> Set β) : Set β where
+--  pair : ∀ {x} -> B x -> Σ' B
+
+{-data Const {α β} {A : Set α} : A -> Set β -> Set β where
+  here : ∀ {B} x -> Const x B-}
+
+-- Why is it in (Set π)?
+data All {α π} {A : Set α} (P : A -> Set π) : ∀ {n} -> Vec A n -> Set π where
+  []ₐ  : All P []
+  _∷ₐ_ : ∀ {n x} {xs : Vec A n} -> P x -> All P xs -> All P (x ∷ xs)
 
 icong : ∀ {ι α β} {I : Set ι} {B : Set β} {i j : I}
           (A : I -> Set α) {x : A i} {y : A j}
