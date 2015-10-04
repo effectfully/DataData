@@ -23,14 +23,17 @@ chips-chips : ∀ Γ Δ -> Γ <>> Δ <>> ε ≡ Δ <>> Γ
 chips-chips  ε      Δ = refl
 chips-chips (Γ ▻ σ) Δ = chips-chips Γ (Δ ▻ σ)
 
-lem : ∀ Γ Δ Ξ -> Δ <>> ε ≡ Γ <>> Ξ -> Γ <>< Ξ ≡ Δ
-lem Γ Δ  ε      p =
+unchips : ∀ Γ Δ -> Γ <>> ε ≡ Δ <>> ε -> Γ ≡ Δ
+unchips Γ Δ p =
   begin
     Γ             ←⟨ chips-chips Γ ε ⟩
-    Γ <>> ε <>> ε ←⟨ cong (_<>> ε) p ⟩
+    Γ <>> ε <>> ε →⟨ cong (_<>> ε) p ⟩
     Δ <>> ε <>> ε →⟨ chips-chips Δ ε ⟩
     Δ
   ∎
+
+lem : ∀ Γ Δ Ξ -> Δ <>> ε ≡ Γ <>> Ξ -> Γ <>< Ξ ≡ Δ
+lem Γ Δ  ε      p = unchips Γ Δ (sym p)
 lem Γ Δ (Ξ ▻ ν) p = lem (Γ ▻ ν) Δ Ξ p
 
 CoN : ℕ -> Set
@@ -50,7 +53,7 @@ Bind {suc n} Γ (Δ , τ) σ = Bound Γ τ -> Bind (Γ ▻ τ) Δ σ
 
 _#_ : ∀ n {Γ} {Δ : CoN n} {σ} -> Bind Γ Δ σ -> Γ ⊢ Δ ⇒ⁿ σ
 _#_  0                  b = b
-_#_ (suc n) {Γ} {Δ , τ} b = ƛ (n # b λ {Δ' Ξ} {{p}} -> subst (_⊢ τ) (lem Γ Δ' (Ξ ▻ τ) p) (var (weak Ξ vz)))
+_#_ (suc n) {Γ} {Δ , τ} b = ƛ (n # b (λ {Δ' Ξ} {{p}} -> subst (_⊢ τ) (lem Γ Δ' (Ξ ▻ τ) p) (var (weak Ξ vz))))
 
 private
   A : ε ⊢ ((⋆ ⇒ ⋆) ⇒ ⋆ ⇒ ⋆)
