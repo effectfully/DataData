@@ -1,6 +1,6 @@
 module DataData.STLC.Hereditary where
 
-open import DataData.Prelude hiding (_∸_)
+open import DataData.Prelude
 open import DataData.STLC.Basic
 open import DataData.STLC.Jigger
 
@@ -80,7 +80,8 @@ mutual
   app* n  Ø      = n
   app* f (m ◁ s) = app* (app₁ f m) s
 
-  -- If a term in normal form has functional type, then it's a lambda, and we can substitute.
+  -- If a term in normal form has functional type, then it's a lambda
+  -- (because applications receive whole spines), and we can substitute.
   app₁ : ∀ {Γ σ τ} -> Γ ⊨ σ ⇒ τ -> Γ ⊨ σ -> Γ ⊨ τ
   app₁ (lam b) n = ⟨ vz ↦ n ⟩ b
 

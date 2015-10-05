@@ -53,7 +53,7 @@ _[_] : ∀ {Γ Δ σ} -> Γ ⊢ σ -> Sub⁺ Γ Δ -> Δ ⊢ σ
 (ƛ b  ) [ θ ] = ƛ (b [ θ ∘ (_▻ _) ])
 (f · x) [ θ ] = f [ θ ] · x [ θ ]
 
--- When going under a lambda we shift by one all variables except for the bound one.
+-- When going under a lambda shift by one all variables except for the bound one.
 keepʳ : ∀ {Γ Δ σ} -> Ren Γ Δ -> Ren (Γ ▻ σ) (Δ ▻ σ)
 keepʳ r  vz    = vz
 keepʳ r (vs v) = vs (r v)
