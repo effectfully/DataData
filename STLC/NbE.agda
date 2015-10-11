@@ -15,10 +15,13 @@ renˢ : ∀ {Γ Δ τ} -> Ren Γ Δ -> Stop Γ τ -> Stop Δ τ
 renˢ r (var v)   = var (r v)
 renˢ r (app f n) = app (renˢ r f) (renⁿᶠ r n)
 
--- Fully apply partially applied `Stop'.
 appˢ* : ∀ {Γ τ} -> Stop Γ τ -> Γ ⊨* τ -> Γ ⊨ ⋆
 appˢ* (var v)   s = app v s
 appˢ* (app f n) s = appˢ* f (n ◁ s)
+
+-- I love this one.
+ηˢ : ∀ {Γ τ} -> Stop Γ τ -> Γ ⊨ τ
+ηˢ s = η* (λ Δ -> appˢ* (renˢ (skip Δ) s))
 
 mutual
   Val : Con -> Type -> Set
@@ -40,9 +43,6 @@ renᵍ {_ ⇒ _} r k  = renᵏ r k
 
 renᵛ : ∀ {Γ Δ τ} -> Ren Γ Δ -> Val Γ τ -> Val Δ τ
 renᵛ r = smap (renᵍ r) (renˢ r)
-
-ηˢ : ∀ {Γ τ} -> Stop Γ τ -> Γ ⊨ τ
-ηˢ s = η* (λ Δ -> appˢ* (renˢ (skip Δ) s))
 
 readback : ∀ {τ Γ} -> Val Γ τ -> Γ ⊨ τ
 readback         (inj₂ s ) = ηˢ s
