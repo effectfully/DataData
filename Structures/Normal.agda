@@ -51,13 +51,15 @@ uninjₙ (inj₂ sh , v₂) = inj₂ (sh , v₂)
 
 -- We need to pass `F₁' explicitly because of pattern matching in _++_.
 unpairₙ : ∀ {α} {A : Set α} (F₁ {F₂} : Normal α) -> ⟦ F₁ ×ₙ F₂ ⟧ₙ A -> ⟦ F₁ ⟧ₙ A × ⟦ F₂ ⟧ₙ A
-unpairₙ F₁ ((sh₁ , sh₂) , v₁₂) = case splitAt (size F₁ sh₁) v₁₂ of λ { (v₁ , v₂ , _) -> (sh₁ , v₁) , (sh₂ , v₂) }
+unpairₙ F₁ ((sh₁ , sh₂) , v₁₂) = case splitAt (size F₁ sh₁) v₁₂ of
+  λ{ (v₁ , v₂ , _) -> (sh₁ , v₁) , (sh₂ , v₂) }
 
 injₙ-surj : ∀ {α} {A : Set α} {F₁ F₂ : Normal α} -> (p : ⟦ F₁ ⊎ₙ F₂ ⟧ₙ A) -> injₙ ⁻¹ p ≈ uninjₙ p
 injₙ-surj (inj₁ sh , v₁) = beta
 injₙ-surj (inj₂ sh , v₂) = beta
 
-unpairₙ-surj : ∀ {α} {A : Set α} (F₁ {F₂} : Normal α) -> (p : ⟦ F₁ ×ₙ F₂ ⟧ₙ A) -> pairₙ ⁻¹ p ≈ unpairₙ F₁ p
+unpairₙ-surj : ∀ {α} {A : Set α} (F₁ {F₂} : Normal α)
+             -> (p : ⟦ F₁ ×ₙ F₂ ⟧ₙ A) -> pairₙ ⁻¹ p ≈ unpairₙ F₁ p
 unpairₙ-surj F₁ ((sh₁ , sh₂) , v₁₂) with splitAt (size F₁ sh₁) v₁₂
 ... | v₁ , v₂ , p rewrite p = beta
 
@@ -72,24 +74,25 @@ instance
 _∘ₙ_ : ∀ {α β} -> Normal α -> Normal β -> Normal (α ⊔ β)
 F₂ ∘ₙ (Sh₁ / s₁) = ⟦ F₂ ⟧ₙ Sh₁ / unSum ∘ foldMap (Sum ∘ s₁) ∘ proj₂
 
-sizeₜ : ∀ {α A} {F : Set α -> Set α} {{Ψ : Foldable F}} -> F A -> ℕ
+sizeₜ : ∀ {α A} {F : Set α -> Set α} {{Ψ : Traversable F}} -> F A -> ℕ
 sizeₜ = unSum ∘ foldMap (Sum ∘ const 1)
 
--- Extension of a `Foldable' is `Traversable'.
+-- Extension of a `Traversable' is `Traversable'.
 instance
-  -- `Foldable' is enough.
-  Foldable<:Normal : ∀ {α} {F : Set α -> Set α} {{Ψ : Foldable F}} -> Normal α
-  Foldable<:Normal {F = F} = F (Lift ⊤) / sizeₜ
+  -- `Traversable' is enough.
+  Traversable<:Normal : ∀ {α} {F : Set α -> Set α} {{Ψ : Traversable F}} -> Normal α
+  Traversable<:Normal {F = F} = F (Lift ⊤) / sizeₜ
 
 -- Seems not nice to use `traverse' instead of `fmap'.
 -- But making `Traverse<:Functor' an instance would introduce ambiguity.
 shapeₜ : ∀ {α A} {F : Set α -> Set α} {{Ψ : Traversable F}} -> F A -> F (Lift ⊤)
 shapeₜ = traverse (const _)
 
-contentsₜ : ∀ {α A} {F : Set α -> Set α} {{Ψ : Foldable F}} -> F A -> ⟦ ListN ⟧ₙ A
+contentsₜ : ∀ {α A} {F : Set α -> Set α} {{Ψ : Traversable F}} -> F A -> ⟦ ListN ⟧ₙ A
 contentsₜ = foldMap (λ x -> , x ∷ [])
 
--- fromTraversable : ∀ {α A} {F : Set α -> Set α} {{Ψ : Traversable F}} -> F A -> ⟦ Foldable<:Normal ⟧ₙ A
+-- fromTraversable : ∀ {α A} {F : Set α -> Set α} {{Ψ : Traversable F}}
+--                 -> F A -> ⟦ Traversable<:Normal ⟧ₙ A
 -- fromTraversable x = shapeₜ x , {!proj₂ (contentsₜ x)!}
 
 -- Reads somewhat backwards: `F₂' extended with references to `F₁'.
@@ -110,7 +113,8 @@ _⊗_ : ∀ {α β} -> Normal α -> Normal β -> Normal (α ⊔ β)
 (Sh₁ / s₁) ⊗ (Sh₂ / s₂) = Sh₁ × Sh₂ / uncurry _*_ ∘ pmap s₁ s₂
 
 swapₙ : ∀ {α β} {F₁ : Normal α} {F₂ : Normal β} -> (F₁ ⊗ F₂) ->ₙ (F₂ ⊗ F₁)
-swapₙ {F₁ = F₁} {F₂ = F₂} (sh₁ , sh₂) rewrite CS.*-comm (size F₁ sh₁) (size F₂ sh₂) = (sh₂ , sh₁) , allFin _
+swapₙ {F₁ = F₁} {F₂ = F₂} (sh₁ , sh₂) rewrite CS.*-comm (size F₁ sh₁) (size F₂ sh₂)
+                                            = (sh₂ , sh₁) , allFin _
 
 -- dropₙ : ∀ {α β} {F₁ : Normal α} {F₂ : Normal β} -> (F₁ ⊗ F₂) ->ₙ (F₁ ∘ₙ F₂)
 -- dropₙ (sh₁ , sh₂) = (sh₁ , replicate sh₂) , {!!}

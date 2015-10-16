@@ -19,7 +19,6 @@ appˢ* : ∀ {Γ τ} -> Stop Γ τ -> Γ ⊨* τ -> Γ ⊨ ⋆
 appˢ* (var v)   s = app v s
 appˢ* (app f n) s = appˢ* f (n ◁ s)
 
--- I love this one.
 ηˢ : ∀ {Γ τ} -> Stop Γ τ -> Γ ⊨ τ
 ηˢ s = η* (λ Δ -> appˢ* (renˢ (skip Δ) s))
 

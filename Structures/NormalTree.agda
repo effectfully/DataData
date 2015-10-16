@@ -19,7 +19,7 @@ zeroT = ⟨ true , [] ⟩
 sucT : Tree NatT -> Tree NatT
 sucT n = ⟨ false , n ∷ [] ⟩
 
-elim-NatT : ∀ {π} -> (P : Tree NatT -> Set π) -> (∀ {n} -> P n -> P (sucT n)) -> P zeroT -> ∀ n -> P n
+elim-NatT : ∀ {π} (P : Tree NatT -> Set π) -> (∀ {n} -> P n -> P (sucT n)) -> P zeroT -> ∀ n -> P n
 elim-NatT P f z ⟨ true  , []     ⟩ = z
 elim-NatT P f z ⟨ false , n ∷ [] ⟩ = f (elim-NatT P f z n)
 

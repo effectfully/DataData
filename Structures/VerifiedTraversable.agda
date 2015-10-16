@@ -34,13 +34,15 @@ _∸>_ : ∀ {α β γ} -> (Set α -> Set β) -> (Set α -> Set γ) -> Set (lsuc
 F ∸> G = ∀ {A} -> F A -> G A 
 
 record ApplicativeHom {α β γ} (F : Set α -> Set β) (G : Set α -> Set γ)
-                      {{Ψ : Applicative F}} {{Φ : Applicative G}} (η : F ∸> G) : Set (lsuc α ⊔ β ⊔ γ) where
+                      {{Ψ : Applicative F}} {{Φ : Applicative G}}
+                      (η : F ∸> G) : Set (lsuc α ⊔ β ⊔ γ) where
   field
     resp-point : ∀ {A} {x : A} -> η (point x) ≡ point x
     resp-⊛     : ∀ {A B x} {f : F (A -> B)} -> η (f ⟨*⟩ x) ≡ η f ⟨*⟩ η x
 
-MonoidHom<:ApplicativeHom : ∀ {α β γ} {A : Set α} {B : Set β} {M : Monoid A} {N : Monoid B} {f : A -> B}
-                              {{MH : MonoidHom A B f}} -> ApplicativeHom {γ} (Constᵣ A) (Constᵣ B) (Const ∘ f ∘ unConst)
+MonoidHom<:ApplicativeHom : ∀ {α β γ} {A : Set α} {B : Set β} {M : Monoid A} {N : Monoid B}
+                              {f : A -> B} {{MH : MonoidHom A B f}}
+                          -> ApplicativeHom {γ} (Constᵣ A) (Constᵣ B) (Const ∘ f ∘ unConst)
 MonoidHom<:ApplicativeHom {A = A} = record
   { resp-point = cong Const (resp-ε {A = A})
   ; resp-⊛     = cong Const (resp-∙ {A = A})

@@ -49,7 +49,8 @@ Bind {suc n} Γ (Δ , τ) σ = Bound Γ τ -> Bind (Γ ▻ τ) Δ σ
 
 _#_ : ∀ n {Γ} {Δ : CoN n} {σ} -> Bind Γ Δ σ -> Γ ⊢ Δ ⇒ⁿ σ
 _#_  0                  b = b
-_#_ (suc n) {Γ} {Δ , τ} b = ƛ (n # b (λ {Δ' Ξ} {{p}} -> subst (_⊢ τ) (lem Γ Δ' (Ξ ▻ τ) p) (var (skip Ξ vz))))
+_#_ (suc n) {Γ} {Δ , τ} b =
+  ƛ (n # b (λ {Δ' Ξ} {{p}} -> subst (_⊢ τ) (lem Γ Δ' (Ξ ▻ τ) p) (var (skip Ξ vz))))
 
 private
   A : ε ⊢ ((⋆ ⇒ ⋆) ⇒ ⋆ ⇒ ⋆)

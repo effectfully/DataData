@@ -7,7 +7,8 @@ record Constᵣ {α β} {B : Set β} (A : Set α) (y : B) : Set α where
   field unConst : A
 open Constᵣ public
 
-record _∘ᵣ_ {α β γ} {A : Set α} {B : A -> Set β} (C : ∀ {x} -> B x -> Set γ) (f : ∀ x -> B x) x : Set γ where
+record _∘ᵣ_ {α β γ} {A : Set α} {B : A -> Set β}
+            (C : ∀ {x} -> B x -> Set γ) (f : ∀ x -> B x) x : Set γ where
   constructor Comp
   field unComp : C (f x)
 open _∘ᵣ_ public
@@ -147,7 +148,6 @@ module _ {α} {A : Set α} {{M : Monoid A}} where
       ; _∙_ = λ x y -> lift (lower x ∙ lower y)
       }
 
--- Due to the not so universe polymorphic `Foldable' we need a wraper anyway.
 record Sumᵣ α : Set α where
   constructor Sum
   field unSum : ℕ
@@ -160,17 +160,17 @@ instance
     ; _∙_ = λ n m -> Sum (unSum n + unSum m)
     }
 
--- Not so universe polymorphic due to the Setω stuff.
--- I don't want to add `γ' to the type signature of `Foldable',
--- because it likely will break instance search.
-record Foldable {α β} (F : Set α -> Set β) : Set (lsuc α ⊔ β) where
-  field
-    foldMap : ∀ {A B} {{M : Monoid {α} B}} -> (A -> B) -> F A -> B
-open Foldable {{...}} public
+-- -- Not so universe polymorphic due to the Setω stuff.
+-- -- I don't want to add `γ' to the type signature of `Foldable',
+-- -- because it likely will break instance search.
+-- record Foldable {α β} (F : Set α -> Set β) : Set (lsuc α ⊔ β) where
+--   field
+--     foldMap : ∀ {A B} {{M : Monoid {α} B}} -> (A -> B) -> F A -> B
+-- open Foldable {{...}} public
 
-instance
-  Lift-Foldable : ∀ {α β} -> Foldable (Lift {α} {β})
-  Lift-Foldable = record { foldMap = _∘ lower }
+-- instance
+--   Lift-Foldable : ∀ {α β} -> Foldable (Lift {α} {β})
+--   Lift-Foldable = record { foldMap = _∘ lower }
 
 record Traversable {α} (F : Set α -> Set α) : Set (lsuc α) where
   field
@@ -181,9 +181,16 @@ module _ {α} {F : Set α -> Set α} {{Ψ : Traversable F}} where
   Traversable<:Functor : Functor F
   Traversable<:Functor = record { _⟨$⟩_ = traverse }
 
-  instance
-    Traversable<:Foldable : Foldable F
-    Traversable<:Foldable = record { foldMap = λ f -> unConst ∘ traverse {B = Lift ⊤} (Const ∘ f) }
+  -- instance
+  --   Traversable<:Foldable : Foldable F
+  --   Traversable<:Foldable = record { foldMap = λ f -> unConst ∘ traverse {B = ─} (Const ∘ f) }
+
+module _ α {β} {F : Set (α ⊔ β) -> Set (α ⊔ β)} {{Ψ : Traversable F}} where
+  foldMapᵤ : ∀ {A} {B : Set β} {{M : Monoid B}} -> (A -> B) -> F A -> B
+  foldMapᵤ f = lower {ℓ = α} ∘ unConst ∘ traverse {B = ─} (Const ∘ lift ∘ f)
+
+module _ {α} where
+  foldMap = foldMapᵤ α {α}
 
 id-Traversable : ∀ {α} -> Traversable {α} id
 id-Traversable = record { traverse = _$_ }

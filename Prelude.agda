@@ -29,6 +29,9 @@ x →⟨ x≡y ⟩ y-irt-z = x ≡⟨     x≡y ⟩ y-irt-z
 _←⟨_⟩_ : ∀ {α} {A : Set α} {y z} -> (x : A) -> y ≡ x -> y IsRelatedTo z -> x IsRelatedTo z
 x ←⟨ y≡x ⟩ y-irt-z = x →⟨ sym y≡x ⟩ y-irt-z
 
+─ : ∀ {α} -> Set α
+─ = Lift ⊤
+
 data All {α π} {A : Set α} (P : A -> Set π) : ∀ {n} -> Vec A n -> Set π where
   []ₐ  : All P []
   _∷ₐ_ : ∀ {n x} {xs : Vec A n} -> P x -> All P xs -> All P (x ∷ xs)
