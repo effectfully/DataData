@@ -55,7 +55,6 @@ instance
 _∸>ᶜ_ : ∀ {α₁ α₂ β₁ β₂} -> Container α₁ β₁ -> Container α₂ β₂ -> Set (α₁ ⊔ α₂ ⊔ β₁ ⊔ β₂)
 (Sh₁ ◃ Pos₁) ∸>ᶜ (Sh₂ ◃ Pos₂) = Σ (Sh₁ -> Sh₂) λ shape₂ -> ∀ sh₁ -> Pos₂ (shape₂ sh₁) -> Pos₁ sh₁
 
--- We don't care about positions, while mapping shapes to shapes.
 morphᶜ : ∀ {α₁ α₂ β₁ β₂} {C₁ : Container α₁ β₁} {C₂ : Container α₂ β₂}
        -> ⟦ C₁ ⟧ᶜ ∸> ⟦ C₂ ⟧ᶜ -> C₁ ∸>ᶜ C₂
 morphᶜ η = proj₁ ∘ η ∘ (_, id) , proj₂ ∘ η ∘ (_, id)
