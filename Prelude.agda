@@ -22,6 +22,7 @@ open import Data.Nat.Properties
 module CS = CommutativeSemiring commutativeSemiring
 
 infixr 2 _→⟨_⟩_ _←⟨_⟩_
+infix  7 _[>_<]_
 
 _→⟨_⟩_ : ∀ {α} {A : Set α} {y z} -> (x : A) -> x ≡ y -> y IsRelatedTo z -> x IsRelatedTo z
 x →⟨ x≡y ⟩ y-irt-z = x ≡⟨     x≡y ⟩ y-irt-z
@@ -32,9 +33,30 @@ x ←⟨ y≡x ⟩ y-irt-z = x →⟨ sym y≡x ⟩ y-irt-z
 ─ : ∀ {α} -> Set α
 ─ = Lift ⊤
 
+_∸>_ : ∀ {α β γ} -> (Set α -> Set β) -> (Set α -> Set γ) -> Set (lsuc α ⊔ β ⊔ γ)
+F ∸> G = ∀ {A} -> F A -> G A
+
 data All {α π} {A : Set α} (P : A -> Set π) : ∀ {n} -> Vec A n -> Set π where
   []ₐ  : All P []
   _∷ₐ_ : ∀ {n x} {xs : Vec A n} -> P x -> All P xs -> All P (x ∷ xs)
+
+first : ∀ {α β γ} {A : Set α} {B : Set β} {C : A -> Set γ}
+      -> (∀ x -> C x) -> (p : A × B) -> C (proj₁ p) × B
+first f (x , y) = f x , y
+
+second : ∀ {α β γ} {A : Set α} {B : A -> Set β} {C : A -> Set γ}
+       -> (∀ {x} -> B x -> C x) -> Σ A B -> Σ A C
+second g (x , y) = x , g y
+
+_[>_<]_ : ∀ {α β γ δ ε} {A : Set α} {B : A -> Set β}
+            {C : A -> Set γ} {D : ∀ {x} -> B x -> Set δ}
+            {E : ∀ {x} {y : B x} -> C x -> D y -> Set ε}
+        -> (f : ∀ x -> C x)
+        -> (∀ {x y} -> (c : C x) -> (d : D y) -> E c d)
+        -> (g : ∀ {x} -> (y : B x) -> D y)
+        -> (p : Σ A B)
+        -> E (f (proj₁ p)) (g (proj₂ p))
+(f [> h <] g) (x , y) = h (f x) (g y)
 
 icong : ∀ {ι α β} {I : Set ι} {B : Set β} {i j : I}
           (A : I -> Set α) {x : A i} {y : A j}

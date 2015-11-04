@@ -30,9 +30,6 @@ module _ {α β} (F : Set α -> Set β) {{Ψ : Applicative F}} where
         ∎
     }
 
-_∸>_ : ∀ {α β γ} -> (Set α -> Set β) -> (Set α -> Set γ) -> Set (lsuc α ⊔ β ⊔ γ)
-F ∸> G = ∀ {A} -> F A -> G A 
-
 record ApplicativeHom {α β γ} (F : Set α -> Set β) (G : Set α -> Set γ)
                       {{Ψ : Applicative F}} {{Φ : Applicative G}}
                       (η : F ∸> G) : Set (lsuc α ⊔ β ⊔ γ) where

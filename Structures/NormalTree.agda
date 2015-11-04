@@ -10,18 +10,18 @@ data Tree {α} (F : Normal α) : Set α where
 ⟨⟩-inj : ∀ {α} {F : Normal α} {p₁ p₂ : ⟦ F ⟧ₙ (Tree F)} -> ⟨ p₁ ⟩ ≡ ⟨ p₂ ⟩ -> p₁ ≡ p₂
 ⟨⟩-inj refl = refl 
 
-NatT : Normal lzero
-NatT = Bool / (if_then 0 else 1)
+Natᵀ : Normal lzero
+Natᵀ = Bool / (if_then 0 else 1)
 
-zeroT : Tree NatT
-zeroT = ⟨ true , [] ⟩
+zeroᵀ : Tree Natᵀ
+zeroᵀ = ⟨ true , [] ⟩
 
-sucT : Tree NatT -> Tree NatT
-sucT n = ⟨ false , n ∷ [] ⟩
+sucᵀ : Tree Natᵀ -> Tree Natᵀ
+sucᵀ n = ⟨ false , n ∷ [] ⟩
 
-elim-NatT : ∀ {π} (P : Tree NatT -> Set π) -> (∀ {n} -> P n -> P (sucT n)) -> P zeroT -> ∀ n -> P n
-elim-NatT P f z ⟨ true  , []     ⟩ = z
-elim-NatT P f z ⟨ false , n ∷ [] ⟩ = f (elim-NatT P f z n)
+elim-Natᵀ : ∀ {π} (P : Tree Natᵀ -> Set π) -> (∀ {n} -> P n -> P (sucᵀ n)) -> P zeroᵀ -> ∀ n -> P n
+elim-Natᵀ P f z ⟨ true  , []     ⟩ = z
+elim-Natᵀ P f z ⟨ false , n ∷ [] ⟩ = f (elim-Natᵀ P f z n)
 
 elim-Tree : ∀ {α π} {F : Normal α} {P : Tree F -> Set π}
           -> (∀ sh -> (ts : Vec (Tree F) (size F sh)) -> All P ts -> P ⟨ sh , ts ⟩) -> ∀ t -> P t

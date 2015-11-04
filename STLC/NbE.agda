@@ -1,7 +1,7 @@
 module DataData.STLC.NbE where
 
 open import DataData.Prelude
-open import DataData.STLC.Basic
+open import DataData.STLC.Core
 open import DataData.STLC.Jigger
 open import DataData.STLC.Hereditary hiding (norm)
 
@@ -20,7 +20,7 @@ appˢ* (var v)   s = app v s
 appˢ* (app f n) s = appˢ* f (n ◁ s)
 
 ηˢ : ∀ {Γ τ} -> Stop Γ τ -> Γ ⊨ τ
-ηˢ s = η* (λ Δ -> appˢ* (renˢ (skip Δ) s))
+ηˢ s = η* (λ Δ -> appˢ* (renˢ (skipʳ Δ) s))
 
 mutual
   Val : Con -> Type -> Set

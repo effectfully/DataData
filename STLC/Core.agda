@@ -1,4 +1,4 @@
-module DataData.STLC.Basic where
+module DataData.STLC.Core where
 
 open import DataData.Prelude
 
@@ -70,18 +70,18 @@ keepˢ⁺ : ∀ {Γ Δ} -> Sub Γ Δ -> Sub⁺ Γ Δ
 keepˢ⁺ s  ε      = s
 keepˢ⁺ s (Ξ ▻ ν) = keepˢ⁺ (keepˢ s) Ξ
 
-skip : ∀ {Γ} Δ -> Ren Γ (Γ <>< Δ)
-skip  ε      v = v
-skip (Δ ▻ σ) v = skip Δ (vs v)
+skipʳ : ∀ {Γ} Δ -> Ren Γ (Γ <>< Δ)
+skipʳ  ε      v = v
+skipʳ (Δ ▻ σ) v = skipʳ Δ (vs v)
 
-widenᵛ : ∀ {Γ Δ} -> Ren Γ (Δ ▻▻ Γ)
-widenᵛ  vz    = vz
-widenᵛ (vs v) = vs (widenᵛ v)
+wkᵛ : ∀ {Γ Δ} -> Ren Γ (Δ ▻▻ Γ)
+wkᵛ  vz    = vz
+wkᵛ (vs v) = vs (wkᵛ v)
 
-widen : ∀ {Γ Δ σ} -> Γ ⊢ σ -> Δ ▻▻ Γ ⊢ σ
-widen (var v) = var (widenᵛ v)
-widen (ƛ b  ) = ƛ (widen b)
-widen (f · x) = widen f · widen x
+wk : ∀ {Γ Δ σ} -> Γ ⊢ σ -> Δ ▻▻ Γ ⊢ σ
+wk (var v) = var (wkᵛ v)
+wk (ƛ b  ) = ƛ (wk b)
+wk (f · x) = wk f · wk x
 
 ren : ∀ {Γ Δ σ} -> Ren Γ Δ -> Γ ⊢ σ -> Δ ⊢ σ
 ren r (var v) = var (r v)

@@ -1,7 +1,7 @@
 module DataData.STLC.Hereditary where
 
 open import DataData.Prelude
-open import DataData.STLC.Basic
+open import DataData.STLC.Core
 open import DataData.STLC.Jigger
 
 infixr 5 _◁_
@@ -94,11 +94,11 @@ mutual
 -- then we write `η*' with the expected type signature and everything just fits.
 mutual
   η : ∀ {σ Γ} -> σ ∈ Γ -> Γ ⊨ σ
-  η v = η* (λ Δ -> app (skip Δ v))
+  η v = η* (λ Δ -> app (skipʳ Δ v))
 
   η* : ∀ {σ Γ} -> (∀ Δ -> Γ <>< Δ ⊨* σ -> Γ <>< Δ ⊨ ⋆) -> Γ ⊨ σ
   η* {⋆}     c = c ε Ø
-  η* {σ ⇒ τ} c = lam (η* (λ Δ s -> c (Δ ▻ σ) (η (skip Δ vz) ◁ s)))
+  η* {σ ⇒ τ} c = lam (η* (λ Δ s -> c (Δ ▻ σ) (η (skipʳ Δ vz) ◁ s)))
 
 norm : ∀ {Γ σ} -> Γ ⊢ σ -> Γ ⊨ σ
 norm (var v) = η v

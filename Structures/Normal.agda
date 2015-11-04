@@ -36,7 +36,7 @@ _⊎ₙ_ : ∀ {α β} -> Normal α -> Normal β -> Normal (α ⊔ β)
 (Sh₁ / s₁) ⊎ₙ (Sh₂ / s₂) = Sh₁ ⊎ Sh₂ / [ s₁ , s₂ ]
 
 _×ₙ_ : ∀ {α β} -> Normal α -> Normal β -> Normal (α ⊔ β)
-(Sh₁ / s₁) ×ₙ (Sh₂ / s₂) = Sh₁ × Sh₂ / uncurry _+_ ∘ pmap s₁ s₂
+(Sh₁ / s₁) ×ₙ (Sh₂ / s₂) = Sh₁ × Sh₂ / s₁ [> _+_ <] s₂
 
 injₙ : ∀ {α} {A : Set α} {F₁ F₂ : Normal α} -> ⟦ F₁ ⟧ₙ A ⊎ ⟦ F₂ ⟧ₙ A -> ⟦ F₁ ⊎ₙ F₂ ⟧ₙ A
 injₙ (inj₁ (sh₁ , v₁)) = inj₁ sh₁ , v₁
@@ -77,9 +77,7 @@ F₂ ∘ₙ (Sh₁ / s₁) = ⟦ F₂ ⟧ₙ Sh₁ / unSum ∘ foldMap (Sum ∘ 
 sizeₜ : ∀ {α A} {F : Set α -> Set α} {{Ψ : Traversable F}} -> F A -> ℕ
 sizeₜ = unSum ∘ foldMap (Sum ∘ const 1)
 
--- Extension of a `Traversable' is `Traversable'.
 instance
-  -- `Traversable' is enough.
   Traversable<:Normal : ∀ {α} {F : Set α -> Set α} {{Ψ : Traversable F}} -> Normal α
   Traversable<:Normal {F = F} = F (Lift ⊤) / sizeₜ
 
@@ -96,23 +94,20 @@ contentsₜ = foldMap (λ x -> , x ∷ [])
 -- fromTraversable x = shapeₜ x , {!proj₂ (contentsₜ x)!}
 
 -- Reads somewhat backwards: `F₂' extended with references to `F₁'.
-_->ₙ_ : ∀ {α β} -> Normal α -> Normal β -> Set (α ⊔ β)
-F₁ ->ₙ F₂ = ∀ sh₁ -> ⟦ F₂ ⟧ₙ (Fin (size F₁ sh₁))
-
-⟨_⟩_∸>ₙ_ : ∀ {α β} ι -> Normal α -> Normal β -> Set (lsuc ι ⊔ α ⊔ β)
-⟨ ι ⟩ F₁ ∸>ₙ F₂ = {I : Set ι} -> ⟦ F₁ ⟧ₙ I -> ⟦ F₂ ⟧ₙ I
+_∸>ₙ_ : ∀ {α β} -> Normal α -> Normal β -> Set (α ⊔ β)
+F₁ ∸>ₙ F₂ = ∀ sh₁ -> ⟦ F₂ ⟧ₙ (Fin (size F₁ sh₁))
 
 -- (⟦ F₂ ⟧ₙ _) contains references to `F₁', (⟦ F₁ ⟧ I) contains `I' => (⟦ F₂ ⟧ I) contains `I'.
-morphₙ : ∀ {α β} {F₁ : Normal α} {F₂ : Normal β} -> F₁ ->ₙ F₂ -> (∀ {ι} -> ⟨ ι ⟩ F₁ ∸>ₙ F₂)
-morphₙ m (sh₁ , v₁) = pmap id (vmap (flip lookup v₁)) (m sh₁)
+morphₙ : ∀ {α β γ} {F₁ : Normal α} {F₂ : Normal β} -> F₁ ∸>ₙ F₂ -> ⟦ F₁ ⟧ₙ ∸> ⟦ F₂ ⟧ₙ
+morphₙ {γ = γ} m (sh₁ , v₁) = second {γ = γ} (vmap (flip lookup v₁)) (m sh₁)
 
-unmorphₙ : ∀ {α β} {F₁ : Normal α} {F₂ : Normal β} -> (∀ {ι} -> ⟨ ι ⟩ F₁ ∸>ₙ F₂) -> F₁ ->ₙ F₂
-unmorphₙ m sh₁ = m (sh₁ , allFin _)
+unmorphₙ : ∀ {α β} {F₁ : Normal α} {F₂ : Normal β} -> ⟦ F₁ ⟧ₙ ∸> ⟦ F₂ ⟧ₙ -> F₁ ∸>ₙ F₂
+unmorphₙ η sh₁ = η (sh₁ , allFin _)
 
 _⊗_ : ∀ {α β} -> Normal α -> Normal β -> Normal (α ⊔ β)
-(Sh₁ / s₁) ⊗ (Sh₂ / s₂) = Sh₁ × Sh₂ / uncurry _*_ ∘ pmap s₁ s₂
+(Sh₁ / s₁) ⊗ (Sh₂ / s₂) = Sh₁ × Sh₂ / s₁ [> _*_ <] s₂
 
-swapₙ : ∀ {α β} {F₁ : Normal α} {F₂ : Normal β} -> (F₁ ⊗ F₂) ->ₙ (F₂ ⊗ F₁)
+swapₙ : ∀ {α β} {F₁ : Normal α} {F₂ : Normal β} -> (F₁ ⊗ F₂) ∸>ₙ (F₂ ⊗ F₁)
 swapₙ {F₁ = F₁} {F₂ = F₂} (sh₁ , sh₂) rewrite CS.*-comm (size F₁ sh₁) (size F₂ sh₂)
                                             = (sh₂ , sh₁) , allFin _
 

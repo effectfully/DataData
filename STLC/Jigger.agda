@@ -1,7 +1,7 @@
 module DataData.STLC.Jigger where
 
 open import DataData.Prelude
-open import DataData.STLC.Basic
+open import DataData.STLC.Core
 
 instance
   irefl : ∀ {α} {A : Set α} {x : A} -> x ≡ x
@@ -40,17 +40,14 @@ _⇒ⁿ_ : ∀ {n} -> CoN n -> Type -> Type
 _⇒ⁿ_ {0}      _      τ = τ
 _⇒ⁿ_ {suc n} (Γ , σ) τ = σ ⇒ Γ ⇒ⁿ τ
 
-Bound : Con -> Type -> Set
-Bound Γ σ = ∀ {Δ Ξ} {{_ : Δ <>> ε ≡ Γ <>> (Ξ ▻ σ)}} -> Δ ⊢ σ
-
 Bind : ∀ {n} -> Con -> CoN n -> Type -> Set
 Bind {0}     Γ  _      σ = Γ ⊢ σ
-Bind {suc n} Γ (Δ , τ) σ = Bound Γ τ -> Bind (Γ ▻ τ) Δ σ
+Bind {suc n} Γ (Δ , τ) σ = (∀ {Δ Ξ} {{_ : Δ <>> ε ≡ Γ <>> (Ξ ▻ τ)}} -> Δ ⊢ τ) -> Bind (Γ ▻ τ) Δ σ
 
 _#_ : ∀ n {Γ} {Δ : CoN n} {σ} -> Bind Γ Δ σ -> Γ ⊢ Δ ⇒ⁿ σ
 _#_  0                  b = b
 _#_ (suc n) {Γ} {Δ , τ} b =
-  ƛ (n # b (λ {Δ' Ξ} {{p}} -> subst (_⊢ τ) (lem Γ Δ' (Ξ ▻ τ) p) (var (skip Ξ vz))))
+  ƛ (n # b (λ {Δ' Ξ} {{p}} -> subst (_⊢ τ) (lem Γ Δ' (Ξ ▻ τ) p) (var (skipʳ Ξ vz))))
 
 private
   A : ε ⊢ ((⋆ ⇒ ⋆) ⇒ ⋆ ⇒ ⋆)

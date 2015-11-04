@@ -10,7 +10,7 @@ record VerifiedMonoid {α} (A : Set α) {{M : Monoid A}} : Set α where
     idʳ   : {x : A}     -> x ∙ ε ≡ x
     assoc : {x y z : A} -> (x ∙ y) ∙ z ≡ x ∙ (y ∙ z)
 
-Sum-VerifiedMonoid : VerifiedMonoid Sumᵣ
+Sum-VerifiedMonoid : ∀ {α} -> VerifiedMonoid (Sumᵣ α)
 Sum-VerifiedMonoid = record
   { idˡ   = refl
   ; idʳ   = λ {x} -> cong Sum (proj₂ CS.+-identity (unSum x))
@@ -31,7 +31,7 @@ record MonoidHom {α β} (A : Set α) (B : Set β) {{M : Monoid A}} {{N : Monoid
     resp-∙ : ∀ {x y} -> f (x ∙ y) ≡ f x ∙ f y
 open MonoidHom {{...}} public
 
-proj₁-Hom : ∀ {α} {A : Set α} -> MonoidHom (⟦ ListN ⟧ₙ A) Sumᵣ (Sum ∘ proj₁)
+proj₁-Hom : ∀ {α β} {A : Set α} -> MonoidHom (⟦ ListN ⟧ₙ A) (Sumᵣ β) (Sum ∘ proj₁)
 proj₁-Hom = record
   { resp-ε = refl
   ; resp-∙ = refl
