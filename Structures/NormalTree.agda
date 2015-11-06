@@ -4,22 +4,24 @@ open import DataData.Prelude
 open import DataData.Structures.Normal
 
 -- Should it be called `Rose'?
-data Tree {α} (F : Normal α) : Set α where
-  ⟨_⟩ : ⟦ F ⟧ₙ (Tree F) -> Tree F
+record Tree {α} (F : Normal α) : Set α where
+  inductive
+  constructor ⟨_⟩
+  field unTree : ⟦ F ⟧ₙ (Tree F)
 
 ⟨⟩-inj : ∀ {α} {F : Normal α} {p₁ p₂ : ⟦ F ⟧ₙ (Tree F)} -> ⟨ p₁ ⟩ ≡ ⟨ p₂ ⟩ -> p₁ ≡ p₂
 ⟨⟩-inj refl = refl 
 
-Natᵀ : Normal lzero
-Natᵀ = Bool / (if_then 0 else 1)
+Natᵀ : Set
+Natᵀ = Tree (Bool / (if_then 0 else 1))
 
-zeroᵀ : Tree Natᵀ
+zeroᵀ : Natᵀ
 zeroᵀ = ⟨ true , [] ⟩
 
-sucᵀ : Tree Natᵀ -> Tree Natᵀ
+sucᵀ : Natᵀ -> Natᵀ
 sucᵀ n = ⟨ false , n ∷ [] ⟩
 
-elim-Natᵀ : ∀ {π} (P : Tree Natᵀ -> Set π) -> (∀ {n} -> P n -> P (sucᵀ n)) -> P zeroᵀ -> ∀ n -> P n
+elim-Natᵀ : ∀ {π} (P : Natᵀ -> Set π) -> (∀ {n} -> P n -> P (sucᵀ n)) -> P zeroᵀ -> ∀ n -> P n
 elim-Natᵀ P f z ⟨ true  , []     ⟩ = z
 elim-Natᵀ P f z ⟨ false , n ∷ [] ⟩ = f (elim-Natᵀ P f z n)
 

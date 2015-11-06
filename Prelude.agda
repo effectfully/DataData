@@ -3,17 +3,19 @@ module DataData.Prelude where
 open import Level renaming (zero to lzero; suc to lsuc)                                        public
 open import Function hiding (_⟨_⟩_)                                                            public
 open import Relation.Nullary                                                                   public
+open import Relation.Nullary.Decidable                                                         public
 open import Relation.Binary hiding (_⇒_)                                                       public
 open import Relation.Binary.PropositionalEquality hiding ([_])                                 public
 open import Relation.Binary.HeterogeneousEquality using (_≅_; ≅-to-≡) renaming (refl to hrefl) public
 open import Data.Empty                                                                         public
-open import Data.Unit.Base using (⊤)                                                           public
+open import Data.Unit.Base using (⊤; tt)                                                       public
 open import Data.Bool.Base                                                                     public
-open import Data.Nat.Base hiding (_⊔_; _∸_)                                                    public
-open import Data.Fin using (Fin)                                                               public
-open import Data.Sum     renaming (map to smap)                                                public
-open import Data.Product renaming (map to pmap)                                                public
-open import Data.Vec     renaming (map to vmap) hiding ([_]; zip; _>>=_; _∈_; module _∈_)      public
+open import Data.Nat.Base hiding (_⊔_; fold; _∸_)                                              public
+open import Data.Fin using (Fin; zero; suc)                                                    public
+open import Data.Maybe.Base renaming (map to mmap) hiding (module All; All)                    public
+open import Data.Sum        renaming (map to smap)                                             public
+open import Data.Product    renaming (map to pmap)                                             public
+open import Data.Vec        renaming (map to vmap) hiding ([_]; zip; _>>=_; _∈_; module _∈_)   public
 open import Data.Vec.Properties                                                                public
 open ≡-Reasoning                                                                               public
 
@@ -33,12 +35,16 @@ x ←⟨ y≡x ⟩ y-irt-z = x →⟨ sym y≡x ⟩ y-irt-z
 ─ : ∀ {α} -> Set α
 ─ = Lift ⊤
 
-_∸>_ : ∀ {α β γ} -> (Set α -> Set β) -> (Set α -> Set γ) -> Set (lsuc α ⊔ β ⊔ γ)
-F ∸> G = ∀ {A} -> F A -> G A
+_∸>_ : ∀ {ι α β} {I : Set ι} -> (I -> Set α) -> (I -> Set β) -> Set (ι ⊔ α ⊔ β)
+A ∸> B = ∀ {x} -> A x -> B x
 
 data All {α π} {A : Set α} (P : A -> Set π) : ∀ {n} -> Vec A n -> Set π where
   []ₐ  : All P []
   _∷ₐ_ : ∀ {n x} {xs : Vec A n} -> P x -> All P xs -> All P (x ∷ xs)
+
+fold : ∀ {α} {A : Set α} -> (A -> A) -> A -> ℕ -> A
+fold f z  0      = z
+fold f z (suc n) = f (fold f z n)
 
 first : ∀ {α β γ} {A : Set α} {B : Set β} {C : A -> Set γ}
       -> (∀ x -> C x) -> (p : A × B) -> C (proj₁ p) × B

@@ -110,6 +110,13 @@ instance
     ; _⟨*⟩_   = λ f x -> lift (lower f (lower x))
     }
 
+instance
+  Maybe-Monad : ∀ {α} -> Monad {α} Maybe
+  Maybe-Monad = record
+    { pointed = record { point = just }
+    ; _>>=_   = λ x f -> maybe f nothing x
+    }
+
 module Vec-Monad where
   _>>=ᵥ_ : ∀ {α β n} {A : Set α} {B : Set β} -> Vec A n -> (A -> Vec B n) -> Vec B n
   []       >>=ᵥ f = []

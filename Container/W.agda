@@ -47,3 +47,23 @@ instance
         _>>=ᶠ_ : {A B : Set γ} -> C *ᶜ A -> (A -> C *ᶜ B) -> C *ᶜ B
         ⟨ inj₁ x  , r ⟩ >>=ᶠ f = f x
         ⟨ inj₂ sh , r ⟩ >>=ᶠ f = ⟨ inj₂ sh , (λ pos -> r pos >>=ᶠ f) ⟩
+
+-- _*ˢ : ∀ {α β} -> Container α β -> Container α β
+-- isoˡ : ∀ {α β γ} {A : Set γ} -> (C : Container α β) -> C *ᶜ A -> ⟦ C *ˢ ⟧ᶜ A
+-- isoʳ : ∀ {α β γ} {A : Set γ} -> (C : Container α β) -> ⟦ C *ˢ ⟧ᶜ A -> C *ᶜ A
+
+call : ∀ {α β} {C : Container α β} -> (sh : Shape C) -> C *ᶜ Position C sh
+call sh = ⟨ inj₂ sh , point ⟩
+
+-- How to read this?
+Π⊥ : ∀ {α β} -> (A : Set α) -> (A -> Set β) -> Set (α ⊔ β)
+Π⊥ A B = (x : A) -> (A ◃ B) *ᶜ B x
+
+-- What does this creepy mutual recursion mean?
+mutual
+  gas : ∀ {α β} {A : Set α} {B : A -> Set β} -> ℕ -> Π⊥ A B -> (x : A) -> Maybe (B x)
+  gas              zero   f x = nothing
+  gas {A = A} {B} (suc n) f x = run (f x) where
+    run : ∀ {x} -> (A ◃ B) *ᶜ B x -> Maybe (B x)
+    run ⟨ inj₁ y  , r ⟩ = just y
+    run ⟨ inj₂ x' , r ⟩ = gas n f x' >>= run ∘ r
