@@ -25,6 +25,7 @@ module CS = CommutativeSemiring commutativeSemiring
 
 infixr 2 _→⟨_⟩_ _←⟨_⟩_
 infix  7 _[>_<]_
+infix  5 _<∨>_
 
 _→⟨_⟩_ : ∀ {α} {A : Set α} {y z} -> (x : A) -> x ≡ y -> y IsRelatedTo z -> x IsRelatedTo z
 x →⟨ x≡y ⟩ y-irt-z = x ≡⟨     x≡y ⟩ y-irt-z
@@ -41,6 +42,10 @@ A ∸> B = ∀ {x} -> A x -> B x
 data All {α π} {A : Set α} (P : A -> Set π) : ∀ {n} -> Vec A n -> Set π where
   []ₐ  : All P []
   _∷ₐ_ : ∀ {n x} {xs : Vec A n} -> P x -> All P xs -> All P (x ∷ xs)
+
+_<∨>_ : ∀ {α} {A : Bool -> Set α} -> A true -> A false -> ∀ b -> A b
+(x <∨> y) true  = x
+(x <∨> y) false = y
 
 fold : ∀ {α} {A : Set α} -> (A -> A) -> A -> ℕ -> A
 fold f z  0      = z

@@ -13,7 +13,7 @@ record Tree {α} (F : Normal α) : Set α where
 ⟨⟩-inj refl = refl 
 
 Natᵀ : Set
-Natᵀ = Tree (Bool / (if_then 0 else 1))
+Natᵀ = Tree (Bool / 0 <∨> 1)
 
 zeroᵀ : Natᵀ
 zeroᵀ = ⟨ true , [] ⟩

@@ -38,6 +38,10 @@ elim-Natᵂ P f z ⟨ true  , r ⟩ = f (elim-Natᵂ P f z (r _))
 _*ᶜ_ : ∀ {α β γ} -> Container α β -> Set γ -> Set (α ⊔ β ⊔ γ)
 C *ᶜ A = W (Kᶜ A ⊎ᶜ C)
 
+-- data Free {σ π α} (Sh : Set σ) (Pos : Sh -> Set π) (A : Set α) : Set (σ ⊔ π ⊔ α) where
+--   pure : A -> Free Sh Pos A
+--   free : ∀ sh -> (Pos sh -> Free Sh Pos A) -> Free Sh Pos A
+
 instance
   *ᶜ-Monad : ∀ {α β γ} {C : Container α β} -> Monad {γ} (C *ᶜ_)
   *ᶜ-Monad {γ = γ} {C} = record
@@ -48,22 +52,32 @@ instance
         ⟨ inj₁ x  , r ⟩ >>=ᶠ f = f x
         ⟨ inj₂ sh , r ⟩ >>=ᶠ f = ⟨ inj₂ sh , (λ pos -> r pos >>=ᶠ f) ⟩
 
--- _*ˢ : ∀ {α β} -> Container α β -> Container α β
--- isoˡ : ∀ {α β γ} {A : Set γ} -> (C : Container α β) -> C *ᶜ A -> ⟦ C *ˢ ⟧ᶜ A
--- isoʳ : ∀ {α β γ} {A : Set γ} -> (C : Container α β) -> ⟦ C *ˢ ⟧ᶜ A -> C *ᶜ A
+-- Instantiate `W' with `⊤' to get `Shape' and iteratively collect positions to get `Pos*'.
+_*ˢ : ∀ {α β} -> Container α β -> Container (α ⊔ β) β
+C *ˢ = (C *ᶜ ⊤) ◃ Pos* where
+  Pos* : C *ᶜ ⊤ -> Set _
+  Pos* ⟨ inj₁ tt , r ⟩ = Lift ⊤
+  Pos* ⟨ inj₂ sh , r ⟩ = ∃ (Pos* ∘ r)
+
+isoˡ : ∀ {α β γ} {A : Set γ} {C : Container α β} -> C *ᶜ A -> ⟦ C *ˢ ⟧ᶜ A
+isoˡ ⟨ inj₁ x  , r ⟩ = ⟨ inj₁ tt , (λ{(lift())})    ⟩ , const x
+isoˡ ⟨ inj₂ sh , r ⟩ = ⟨ inj₂ sh , proj₁ ∘ isoˡ ∘ r ⟩ , uncurry λ pos -> proj₂ (isoˡ (r pos))
+
+isoʳ : ∀ {α β γ} {A : Set γ} {C : Container α β} -> ⟦ C *ˢ ⟧ᶜ A -> C *ᶜ A
+isoʳ (⟨ inj₁ tt , r ⟩ , ẋ)  = ⟨ inj₁ (ẋ _) , (λ{(lift())}) ⟩
+isoʳ (⟨ inj₂ sh , r ⟩ , el) = ⟨ inj₂ sh    , (λ pos -> isoʳ (r pos , el ∘ _,_ pos)) ⟩
 
 call : ∀ {α β} {C : Container α β} -> (sh : Shape C) -> C *ᶜ Position C sh
 call sh = ⟨ inj₂ sh , point ⟩
 
 -- How to read this?
 Π⊥ : ∀ {α β} -> (A : Set α) -> (A -> Set β) -> Set (α ⊔ β)
-Π⊥ A B = (x : A) -> (A ◃ B) *ᶜ B x
+Π⊥ A B = ∀ x -> (A ◃ B) *ᶜ B x
 
 -- What does this creepy mutual recursion mean?
-mutual
-  gas : ∀ {α β} {A : Set α} {B : A -> Set β} -> ℕ -> Π⊥ A B -> (x : A) -> Maybe (B x)
-  gas              zero   f x = nothing
-  gas {A = A} {B} (suc n) f x = run (f x) where
-    run : ∀ {x} -> (A ◃ B) *ᶜ B x -> Maybe (B x)
-    run ⟨ inj₁ y  , r ⟩ = just y
-    run ⟨ inj₂ x' , r ⟩ = gas n f x' >>= run ∘ r
+gas : ∀ {α β} {A : Set α} {B : A -> Set β} -> ℕ -> Π⊥ A B -> (x : A) -> Maybe (B x)
+gas              zero   f x = nothing
+gas {A = A} {B} (suc n) f x = run (f x) where
+  run : ∀ {x} -> (A ◃ B) *ᶜ B x -> Maybe (B x)
+  run ⟨ inj₁ y  , r ⟩ = just y
+  run ⟨ inj₂ x' , r ⟩ = gas n f x' >>= run ∘ r

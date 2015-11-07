@@ -10,10 +10,10 @@ record IContainer {ι κ} (I : Set ι) (J : Set κ) α β : Set (ι ⊔ κ ⊔ l
   field
     Shape    : J -> Set α
     Position : ∀ j -> Shape j -> Set β
-    index    : ∀ j (sh : Shape j) -> Position j sh -> I
+    irec     : ∀ j (sh : Shape j) -> Position j sh -> I
 
   ⟦_⟧ᵢ : ∀ {γ} -> (I -> Set γ) -> J -> Set (α ⊔ β ⊔ γ)
-  ⟦_⟧ᵢ A j = ∃ λ sh -> (p : Position j sh) -> A (index j sh p)
+  ⟦_⟧ᵢ A j = ∃ λ sh -> (p : Position j sh) -> A (irec j sh p)
 open IContainer public
 
 mapᵢ : ∀ {ι κ α β γ δ} {I : Set ι} {J : Set κ} {C : IContainer I J α β}
@@ -36,16 +36,16 @@ sucᴵ : Natᴵ -> Natᴵ
 sucᴵ n = ⟨ true , const n ⟩
 
 Vecᴵ : ∀ {α} -> Set α -> ℕ -> Set α
-Vecᴵ {α} A = ITree (El ◃ Rec $ irec) where
+Vecᴵ {α} A = ITree (El ◃ Rec $ prev) where
   El : ℕ -> Set α
   El  0      = Lift ⊤
   El (suc n) = A
   Rec : ∀ n -> El n -> Set
   Rec  0      _ = ⊥
   Rec (suc n) _ = ⊤
-  irec : ∀ n -> (el : El n) -> Rec n el -> ℕ
-  irec  0      _ ()
-  irec (suc n) _ _  = n
+  prev : ∀ n -> (el : El n) -> Rec n el -> ℕ
+  prev  0      _ ()
+  prev (suc n) _ _  = n
 
 nilᴵ : ∀ {α} {A : Set α} -> Vecᴵ A 0
 nilᴵ = ⟨ , (λ()) ⟩
@@ -61,16 +61,16 @@ data _⊢ᴱ_ Γ : Type -> Set where
   app  : (σ τ : Type) -> Γ ⊢ᴱ τ
 
 _⊢ᴵ_ : Con -> Type -> Set
-_⊢ᴵ_ = curry (ITree (uncurry _⊢ᴱ_ ◃ (λ _ -> Rec) $ (λ _ -> irec))) where
+_⊢ᴵ_ = curry (ITree (uncurry _⊢ᴱ_ ◃ (λ _ -> Rec) $ (λ _ -> prev))) where
   Rec : ∀ {Γ σ} -> Γ ⊢ᴱ σ -> Set
   Rec (varᴱ v)  = ⊥
   Rec (lam σ τ) = ⊤
   Rec (app σ τ) = Bool
 
-  irec : ∀ {Γ σ} -> (t : Γ ⊢ᴱ σ) -> Rec t -> Con × Type
-  irec     (varᴱ v)  ()
-  irec {Γ} (lam σ τ) _  = Γ ▻ σ , τ
-  irec {Γ} (app σ τ) b  = Γ , (if b then σ ⇒ τ else σ)
+  prev : ∀ {Γ σ} -> (t : Γ ⊢ᴱ σ) -> Rec t -> Con × Type
+  prev     (varᴱ v)  ()
+  prev {Γ} (lam σ τ) _  = Γ ▻ σ , τ
+  prev {Γ} (app σ τ) b  = Γ , (if b then σ ⇒ τ else σ)
 
 varᴵ : ∀ {Γ σ} -> σ ∈ Γ -> Γ ⊢ᴵ σ
 varᴵ v = ⟨ varᴱ v , (λ()) ⟩
@@ -79,7 +79,4 @@ varᴵ v = ⟨ varᴱ v , (λ()) ⟩
 ƛᴵ {σ} {τ} b = ⟨ lam σ τ , const b ⟩
 
 _·ᴵ_ : ∀ {σ τ Γ} -> Γ ⊢ᴵ σ ⇒ τ -> Γ ⊢ᴵ σ -> Γ ⊢ᴵ τ
-_·ᴵ_ {σ} {τ} f x = ⟨ app σ τ , arg ⟩ where
-  arg : ∀ b -> _
-  arg true  = f
-  arg false = x
+_·ᴵ_ {σ} {τ} f x = ⟨ app σ τ , f <∨> x ⟩
