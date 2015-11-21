@@ -9,7 +9,7 @@ open import Relation.Binary.PropositionalEquality hiding ([_])                  
 open import Relation.Binary.HeterogeneousEquality using (_≅_; ≅-to-≡) renaming (refl to hrefl) public
 open import Data.Empty                                                                         public
 open import Data.Unit.Base using (⊤; tt)                                                       public
-open import Data.Bool.Base                                                                     public
+open import Data.Bool.Base hiding (_≟_)                                                        public
 open import Data.Nat.Base hiding (_⊔_; fold; _∸_)                                              public
 open import Data.Fin using (Fin; zero; suc)                                                    public
 open import Data.Maybe.Base renaming (map to mmap) hiding (module All; All)                    public
@@ -25,6 +25,7 @@ module CS = CommutativeSemiring commutativeSemiring
 
 infixr 2 _→⟨_⟩_ _←⟨_⟩_
 infix  7 _[>_<]_
+infixr 0 _∸>_
 infix  5 _<∨>_
 
 _→⟨_⟩_ : ∀ {α} {A : Set α} {y z} -> (x : A) -> x ≡ y -> y IsRelatedTo z -> x IsRelatedTo z
@@ -68,6 +69,15 @@ _[>_<]_ : ∀ {α β γ δ ε} {A : Set α} {B : A -> Set β}
         -> (p : Σ A B)
         -> E (f (proj₁ p)) (g (proj₂ p))
 (f [> h <] g) (x , y) = h (f x) (g y)
+
+_<×>_ : ∀ {α β γ δ ε ζ} {A : Set α} {B : A -> Set β} {C : A -> Set γ}
+          {D : ∀ {a a'} -> B a -> C a' -> Set δ}
+      -> (∀ a -> C a -> Set ε)
+      -> (∀ {a a'} {c : C a} -> (b : B a') -> (d : D b c) -> Set ζ)
+      -> (p : Σ A B)
+      -> (q : Σ (C (proj₁ p)) (D (proj₂ p)))
+      -> Set (ε ⊔ ζ)
+(F <×> G) (a , b) (c , d) = F a c × G b d
 
 icong : ∀ {ι α β} {I : Set ι} {B : Set β} {i j : I}
           (A : I -> Set α) {x : A i} {y : A j}

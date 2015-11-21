@@ -11,9 +11,9 @@ module _ {α β} (F : Set α -> Set β) {{Ψ : Applicative F}} where
 
   record VerifiedApplicative : Set (lsuc α ⊔ β) where
     field
-      aid   : ∀ {A} {x : F A}            -> point id ⟨⋆⟩ x      ≡ x
-      ahom  : ∀ {A B x} {f : A -> B}     -> point f ⟨⋆⟩ point x ≡ point (f x)
-      aint  : ∀ {A B x} {f : F (A -> B)} -> f ⟨⋆⟩ point x       ≡ point (_$ x) ⟨⋆⟩ f
+      aid   : ∀ {A} {x : F A}                  -> point id ⟨⋆⟩ x      ≡ x
+      ahom  : ∀ {A B} {x : A} {f : A -> B}     -> point f ⟨⋆⟩ point x ≡ point (f x)
+      aint  : ∀ {A B} {x : A} {f : F (A -> B)} -> f ⟨⋆⟩ point x       ≡ point (_$ x) ⟨⋆⟩ f
       acomp : ∀ {A B C x} {g : F (B -> C)} {f : F (A -> B)}
             -> point _∘′_ ⟨⋆⟩ g ⟨⋆⟩ f ⟨⋆⟩ x ≡ g ⟨⋆⟩ (f ⟨⋆⟩ x)
   open VerifiedApplicative {{...}} public
