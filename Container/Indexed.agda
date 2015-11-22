@@ -5,6 +5,7 @@ open import DataData.STLC.Core
 
 infixr 0 _◃_$_
 
+-- "J-indexed thing with places for I-indexed elements".
 record IContainer {ι κ} (I : Set ι) (J : Set κ) α β : Set (ι ⊔ κ ⊔ lsuc (α ⊔ β)) where
   constructor _◃_$_
   field
@@ -32,61 +33,10 @@ mapᵢ : ∀ {ι κ α β γ δ} {I : Set ι} {J : Set κ} {C : IContainer I J �
      -> (A ∸> B) -> ⟦ C ⟧ᵢ A ∸> ⟦ C ⟧ᵢ B
 mapᵢ f = second (f ∘_)
 
-Everywhere : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
-           -> (C : IContainer I J α β)
-           -> (A : I -> Set γ)
-           -> IContainer (Σ I A) (Σ J (⟦ C ⟧ᵢ A)) lzero β
-Everywhere (Sh ◃ Pos $ ind) A = (λ   _                  -> ⊤                      )
-                              ◃ (λ{ (j , sh , el) _     -> Pos j sh              })
-                              $ (λ{ (j , sh , el) _ pos -> ind j sh pos , el pos })
-
-allTrivial : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
-           -> (C : IContainer I J α β)
-           -> (A : I -> Set γ)
-           -> ∀ {j} -> ⟦ Everywhere C A ⟧ᵢ (λ _ -> ⊤) j
-allTrivial C A = _ , _
-
--- Somewhere : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
---           -> (C : IContainer I J α β)
---           -> (A : I -> Set γ)
---           -> IContainer (Σ I A) (Σ J (⟦ C ⟧ᵢ A)) β lzero
--- Somewhere (Sh ◃ Pos $ ind) A = (λ{ (j , sh , el)       -> Pos j sh              })
---                              ◃ (λ{  _            _     -> ⊤                     })
---                              $ (λ{ (j , sh , el) pos _ -> ind j sh pos , el pos })
-
-Somewhere : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
-          -> (C : IContainer I J α β)
-          -> (A : I -> Set γ)
-          -> IContainer (Σ I A) (Σ J (Elᵢ C A)) lzero lzero
-Somewhere (Sh ◃ Pos $ ind) A = (λ _   -> ⊤)
-                             ◃ (λ _ _ -> ⊤)
-                             $ (λ{ (j , sh , pos , x) _ _ -> ind j sh pos , x })
-
-noMagic : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
-        -> (C : IContainer I J α β)
-        -> (A : I -> Set γ)
-        -> ∀ {j} -> ¬ ⟦ Somewhere C A ⟧ᵢ (λ _ -> ⊥) j
-noMagic C A (_ , flip) = flip _
-
-lookupᵢ : ∀ {ι κ α β γ π ρ} {I : Set ι} {J : Set κ} {A : I -> Set γ}
-            {P : Σ I A -> Set π} {Q : Σ I A -> Set ρ} {C : IContainer I J α β} {j pos}
-        -> ⟦ Everywhere C A ⟧ᵢ  P             j
-        -> ⟦ Somewhere  C A ⟧ᵢ  Q            (, elᵢ C A (proj₂ j) pos)
-        -> ⟦ Somewhere  C A ⟧ᵢ (_×_ ∘ P ˢ Q) (, elᵢ C A (proj₂ j) pos)
-lookupᵢ (_ , pr₁) (_ , pr₂) = _ , λ _ -> pr₁ _ , pr₂ _
-
 record ITree {κ α β} {J : Set κ} (C : IContainer J J α β) (j : J) : Set (κ ⊔ α ⊔ β) where
   inductive
   constructor ⟨_⟩
   field unITree : ⟦ C ⟧ᵢ (ITree C) j
-
-{-# TERMINATING #-}
-elim-ITree : ∀ {κ α β π} {J : Set κ} {C : IContainer J J α β} {j : J}
-           -> (P : Σ J (ITree C) -> Set π)
-           -> (⟦ Everywhere C (ITree C) ⟧ᵢ P ∸> P ∘ second ⟨_⟩)
-           -> (t : ITree C j)
-           -> P (j , t)
-elim-ITree P n ⟨ sh , el ⟩ = n (_ , elim-ITree P n ∘ el)
 
 Natᴵ : Set
 Natᴵ = ITree (const Bool ◃ const T $ _) tt
@@ -142,3 +92,54 @@ varᴵ v = ⟨ varᴱ v , (λ()) ⟩
 
 _·ᴵ_ : ∀ {σ τ Γ} -> Γ ⊢ᴵ σ ⇒ τ -> Γ ⊢ᴵ σ -> Γ ⊢ᴵ τ
 _·ᴵ_ {σ} {τ} f x = ⟨ app σ τ , f <∨> x ⟩
+
+Everywhereᵢ : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
+            -> (C : IContainer I J α β)
+            -> (A : I -> Set γ)
+            -> IContainer (Σ I A) (Σ J (⟦ C ⟧ᵢ A)) lzero β
+Everywhereᵢ (Sh ◃ Pos $ ind) A = (λ   _                  -> ⊤                      )
+                               ◃ (λ{ (j , sh , el) _     -> Pos j sh              })
+                               $ (λ{ (j , sh , el) _ pos -> ind j sh pos , el pos })
+
+allTrivial : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
+           -> (C : IContainer I J α β)
+           -> (A : I -> Set γ)
+           -> ∀ {j} -> ⟦ Everywhereᵢ C A ⟧ᵢ (λ _ -> ⊤) j
+allTrivial C A = _ , _
+
+-- Somewhereᵢ : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
+--            -> (C : IContainer I J α β)
+--            -> (A : I -> Set γ)
+--            -> IContainer (Σ I A) (Σ J (⟦ C ⟧ᵢ A)) β lzero
+-- Somewhereᵢ (Sh ◃ Pos $ ind) A = (λ{ (j , sh , el)       -> Pos j sh              })
+--                               ◃ (λ{  _            _     -> ⊤                     })
+--                               $ (λ{ (j , sh , el) pos _ -> ind j sh pos , el pos })
+
+Somewhereᵢ : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
+           -> (C : IContainer I J α β)
+           -> (A : I -> Set γ)
+           -> IContainer (Σ I A) (Σ J (Elᵢ C A)) lzero lzero
+Somewhereᵢ (Sh ◃ Pos $ ind) A = (λ _   -> ⊤)
+                              ◃ (λ _ _ -> ⊤)
+                              $ (λ{ (j , sh , pos , x) _ _ -> ind j sh pos , x })
+
+noMagic : ∀ {ι κ α β γ} {I : Set ι} {J : Set κ}
+        -> (C : IContainer I J α β)
+        -> (A : I -> Set γ)
+        -> ∀ {j} -> ¬ ⟦ Somewhereᵢ C A ⟧ᵢ (λ _ -> ⊥) j
+noMagic C A (_ , flip) = flip _
+
+lookupᵢ : ∀ {ι κ α β γ π ρ} {I : Set ι} {J : Set κ} {A : I -> Set γ}
+            {P : Σ I A -> Set π} {Q : Σ I A -> Set ρ} {C : IContainer I J α β} {j pos}
+        -> ⟦ Everywhereᵢ C A ⟧ᵢ  P             j
+        -> ⟦ Somewhereᵢ  C A ⟧ᵢ  Q            (, elᵢ C A (proj₂ j) pos)
+        -> ⟦ Somewhereᵢ  C A ⟧ᵢ (_×_ ∘ P ˢ Q) (, elᵢ C A (proj₂ j) pos)
+lookupᵢ (_ , pr₁) (_ , pr₂) = _ , λ _ -> pr₁ _ , pr₂ _
+
+{-# TERMINATING #-}
+elim-ITree : ∀ {κ α β π} {J : Set κ} {C : IContainer J J α β} {j : J}
+           -> (P : Σ J (ITree C) -> Set π)
+           -> (⟦ Everywhereᵢ C (ITree C) ⟧ᵢ P ∸> P ∘ second ⟨_⟩)
+           -> (t : ITree C j)
+           -> P (j , t)
+elim-ITree P r ⟨ sh , el ⟩ = r (_ , elim-ITree P r ∘ el)
