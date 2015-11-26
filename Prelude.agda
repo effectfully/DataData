@@ -11,7 +11,7 @@ open import Data.Empty                                                          
 open import Data.Unit.Base using (⊤; tt)                                                       public
 open import Data.Bool.Base hiding (_≟_)                                                        public
 open import Data.Nat.Base hiding (_⊔_; fold; _∸_)                                              public
-open import Data.Fin using (Fin; zero; suc)                                                    public
+open import Data.Fin using (Fin; zero; suc; fromℕ; inject₁)                                    public
 open import Data.Maybe.Base renaming (map to mmap) hiding (module All; All)                    public
 open import Data.Sum        renaming (map to smap)                                             public
 open import Data.Product    renaming (map to pmap)                                             public

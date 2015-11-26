@@ -1,6 +1,7 @@
 module DataData.IR.Core where
 
 open import DataData.Prelude
+open import DataData.Container.Indexed
 
 module _ {α} {A : Set α} (_≟_ : Decidable (_≡_ {A = A})) where
   mutual
@@ -66,3 +67,20 @@ truncˡ : ∀ {R} -> (i : Fin (Sizeˡ R)) -> ⟦ R ⟧ˡ -> ⟦ Truncˡ R i ⟧�
 truncˡ {⟨⟩ˡ}     ()      _
 truncˡ {R ,ˡ F}  zero   (r , x) = r
 truncˡ {R ,ˡ F} (suc i) (r , x) = truncˡ i r
+
+mutual
+  data Uᵀ : Set where
+    bot top bool : Uᵀ
+    sigma pi : (a : Uᵀ) -> (⟦ a ⟧ᵀ -> Uᵀ) -> Uᵀ
+    tree : (j : Uᵀ) -> (⟦ j ⟧ᵀ -> ∃ λ a -> ⟦ a ⟧ᵀ -> ∃ λ b -> ⟦ b ⟧ᵀ -> ⟦ j ⟧ᵀ) -> ⟦ j ⟧ᵀ -> Uᵀ
+
+  ⟦_⟧ᵀ : Uᵀ -> Set
+  ⟦ bot        ⟧ᵀ = ⊥
+  ⟦ top        ⟧ᵀ = ⊤
+  ⟦ bool       ⟧ᵀ = Bool
+  ⟦ sigma a f  ⟧ᵀ = Σ ⟦ a ⟧ᵀ λ x -> ⟦ f x ⟧ᵀ
+  ⟦ pi a f     ⟧ᵀ = (x : ⟦ a ⟧ᵀ) -> ⟦ f x ⟧ᵀ
+  ⟦ tree j f κ ⟧ᵀ = ITree (  (λ j -> ⟦ proj₁ (f j) ⟧ᵀ)
+                           ◃ (λ j sh -> ⟦ proj₁ (proj₂ (f j) sh) ⟧ᵀ )
+                           $ (λ j sh pos -> proj₂ (proj₂ (f j) sh) pos))
+                          κ
