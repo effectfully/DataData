@@ -12,7 +12,7 @@ record Container α β : Set (lsuc (α ⊔ β)) where
     Position : Shape -> Set β
 open Container public
 
-⟦_⟧ᶜ : ∀ {α β γ} -> Container α β -> (A : Set γ) -> Set (α ⊔ β ⊔ γ)
+⟦_⟧ᶜ : ∀ {α β γ} -> Container α β -> Set γ -> Set (α ⊔ β ⊔ γ)
 ⟦ Sh ◃ Pos ⟧ᶜ A = ∃ λ sh -> Pos sh -> A
 
 Kᶜ : ∀ {α β} -> Set α -> Container α β

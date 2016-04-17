@@ -32,11 +32,7 @@ IContainer-Desc : ∀ {ι κ α} {I : Set ι} {J : Set κ} -> IContainer I J α 
 IContainer-Desc (Sh ◃ Pos $ ind) j = σ (Sh j) λ sh -> π (Pos j sh) λ pos -> var (ind j sh pos)
 
 Shapeᴰ : ∀ {ι α} {I : Set ι} -> Desc I α -> Set α
-Shapeᴰ (var i)     = Lift ⊤
-Shapeᴰ (κ A)       = A
-Shapeᴰ (σ A f)     = ∃ λ x -> Shapeᴰ (f x)
-Shapeᴰ (π A f)     = ∀   x -> Shapeᴰ (f x)
-Shapeᴰ (d₁ <&> d₂) = Shapeᴰ d₁ × Shapeᴰ d₂
+Shapeᴰ d = ⟦ d ⟧ᴰ (λ _ -> Lift ⊤)
 
 Positionᴰ : ∀ {ι α} {I : Set ι} -> (d : Desc I α) -> Shapeᴰ d -> Set α
 Positionᴰ (var i)      _          = Lift ⊤

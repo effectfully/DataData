@@ -14,13 +14,20 @@ mutual
   ⟦_⟧ᴴ          nat     = ℕ
   ⟦_⟧ᴴ         (pi a f) = (x : ⟦ a ⟧ᴴ) -> ⟦ f x ⟧ᴴ
 
+injectFromℕ : ∀ {m} n -> Fin (suc (n + m))
+injectFromℕ  0      = fromℕ _
+injectFromℕ (suc n) = inject₁ (injectFromℕ n)
+
 mutual
   Predᴴ : ∀ {n} -> Fin n -> Set
   Predᴴ {suc n}  zero   = Setᴴ n
-  Predᴴ {suc n} (suc i) = Predᴴ i
+  Predᴴ         (suc i) = Predᴴ i
 
   Setᴴ : ℕ -> Set
   Setᴴ n = Uᴴ {n} Predᴴ
+
+u′ : ∀ {m} n -> Setᴴ (suc (n + m))
+u′ n = u (injectFromℕ n)
 
 to-subst : ∀ {α β} {A : Set α} {x y : A}
          -> (B : A -> Set β) -> (f : ∀ x -> B x) -> (p : x ≡ y) -> subst B p (f x) ≡ f y
@@ -41,7 +48,7 @@ mutual
   uncoe  nat     n = n
   uncoe (pi a f) h = λ x -> uncoe (f x)
     (subst (λ x -> ⟦ ⇑ (f x) ⟧ᴴ) (uncoe-coe a x)
-                                          (h (coe a x)))
+                                        (h (coe a x)))
 
   coe : ∀ {n} -> (a : Setᴴ n) -> ⟦ a ⟧ᴴ -> ⟦ ⇑ a ⟧ᴴ
   coe (u i)    s = s
@@ -57,13 +64,6 @@ mutual
                           (λ x -> coe (f x) (h x))
                           (uncoe-coe a x)))
           (uncoe-coe (f x) (h x))
-
-minus : ∀ {m} n -> Fin (suc (n + m))
-minus  0      = fromℕ _
-minus (suc n) = inject₁ (minus n)
-
-u′ : ∀ {m} n -> Setᴴ (suc (n + m))
-u′ n = u (minus n)
 
 private
   ex₀ : Setᴴ 0
